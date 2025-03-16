@@ -80,19 +80,23 @@ jobs:
             go mod tidy
             go build
             
-            # Compress dashboard binary
-            gzip -c dashboard > /workspace/dashboard.gz
+            # Compress dashboard binary and commit
+            gzip -c dashboard > dashboard.gz
+            
+            # Move the file to the repository
+            echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+            cp dashboard.gz ${GITHUB_WORKSPACE}/
+            cd ${GITHUB_WORKSPACE}
+            
+            # Git operations
+            git config --global user.email "github-actions@github.com"
+            git config --global user.name "GitHub Actions"
+            git add dashboard.gz
+            git commit -m "Update FreeBSD dashboard binary" || true
+            git push
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dashboard-freebsd
-          path: dashboard.gz
-          
-      - name: Commit and push if changed
-        run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add dashboard.gz
-          git commit -m "Update FreeBSD dashboard binary" || exit 0
-          git push 
+          path: dashboard.gz 
