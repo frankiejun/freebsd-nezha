@@ -92,12 +92,15 @@ jobs:
             git config --global --add safe.directory ${GITHUB_WORKSPACE}
             git config --global user.email "github-actions@github.com"
             git config --global user.name "GitHub Actions"
-            git add dashboard.gz
+            git add -f dashboard.gz  # 使用 -f 强制添加被忽略的文件
             git commit -m "Update FreeBSD dashboard binary" || true
-            git push
+            git push origin main
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: dashboard-freebsd
-          path: dashboard.gz 
+          path: dashboard.gz
+
+permissions:
+  contents: write  # 添加写入权限 
