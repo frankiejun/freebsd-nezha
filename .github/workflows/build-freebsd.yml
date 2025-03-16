@@ -110,11 +110,11 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.NEZHA_LATEST_TAG }}
-          name: "FreeBSD Dashboard ${{ env.NEZHA_LATEST_TAG }}"
+          name: "FreeBSD nezha-Dashboard ${{ env.NEZHA_LATEST_TAG }}"
           files: |
             dashboard.gz
           body: |
-            FreeBSD dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
+            FreeBSD nezha-dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
           draft: false
           prerelease: false
         env:
@@ -123,6 +123,8 @@ jobs:
   cleanup_runs:
     name: Cleanup Old Workflow Runs
     runs-on: ubuntu-latest
+    permissions:
+      actions: write    # 添加 actions 写入权限
     steps:
       - name: Delete old workflow runs
         uses: Mattraks/delete-workflow-runs@v2
@@ -133,4 +135,5 @@ jobs:
           keep_minimum_runs: 5        
 
 permissions:
-  contents: write  # 添加写入权限 
+  contents: write
+  actions: write      # 添加全局 actions 写入权限 
