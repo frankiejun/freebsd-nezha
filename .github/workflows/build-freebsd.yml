@@ -14,6 +14,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Clean up existing VM
+        run: |
+          sudo virsh destroy freebsd || true
+          sudo virsh undefine freebsd || true
+          sudo rm -f /home/runner/work/_actions/vmactions/freebsd-vm/v1/freebsd-14.2.qcow2 || true
+
       - name: Setup FreeBSD VM
         uses: vmactions/freebsd-vm@v1
         with:
