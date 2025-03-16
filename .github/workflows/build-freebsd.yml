@@ -14,26 +14,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Clean up existing VM
-        run: |
-          sudo virsh destroy freebsd || true
-          sudo virsh undefine freebsd || true
-          sudo rm -f /home/runner/work/_actions/vmactions/freebsd-vm/v1/freebsd-14.2.qcow2 || true
-
-      - name: Setup FreeBSD VM
-        uses: vmactions/freebsd-vm@v1
-        with:
-          usesh: true
-          prepare: |
-            pkg install -y go git wget unzip
-            go install github.com/swaggo/swag/cmd/swag@latest
-
-      - name: Build Dashboard
+      - name: Setup and Build in FreeBSD VM
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
           sync: rsync
           copyback: true
+          prepare: |
+            pkg install -y go git wget unzip
+            go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             export PATH=$PATH:/root/go/bin
             
