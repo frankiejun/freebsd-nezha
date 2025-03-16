@@ -1,5 +1,6 @@
 # Binary files
 *.gz
+!dashboard.gz  # 允许 dashboard.gz
 
 # Go files
 *.exe

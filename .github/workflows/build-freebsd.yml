@@ -1,6 +1,8 @@
 name: Build FreeBSD Dashboard
 
 on:
+  schedule:
+    - cron: '1 0 * * *'
   workflow_dispatch:
   push:
     branches: [ main ]
@@ -13,8 +15,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
+      - name: Get latest tags
+        run: |
+          CURRENT_REPO_TAG=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .tag_name)
+          NEZHA_LATEST_TAG=$(curl -sL "https://api.github.com/repos/naiba/nezha/releases/latest" | jq -r .tag_name)
+          echo "CURRENT_REPO_TAG=${CURRENT_REPO_TAG}" >> $GITHUB_ENV
+          echo "NEZHA_LATEST_TAG=${NEZHA_LATEST_TAG}" >> $GITHUB_ENV
+
+      - name: Compare tags
+        run: |
+          if [ -z "${{ env.CURRENT_REPO_TAG }}" ] || [ "${{ env.CURRENT_REPO_TAG }}" != "${{ env.NEZHA_LATEST_TAG }}" ]; then
+            echo "TRIGGER_BUILD=true" >> $GITHUB_ENV
+          else
+            echo "TRIGGER_BUILD=false" >> $GITHUB_ENV
+          fi  
 
       - name: Setup and Build in FreeBSD VM
+        if: env.TRIGGER_BUILD == 'true'
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
@@ -83,24 +101,36 @@ jobs:
             # Compress dashboard binary and commit
             gzip -c dashboard > dashboard.gz
             
-            # Move the file to the repository
+            # Move the file to the workspace
             echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
             cp dashboard.gz ${GITHUB_WORKSPACE}/
-            cd ${GITHUB_WORKSPACE}
-            
-            # Git operations
-            git config --global --add safe.directory ${GITHUB_WORKSPACE}
-            git config --global user.email "github-actions@github.com"
-            git config --global user.name "GitHub Actions"
-            git add -f dashboard.gz  # 使用 -f 强制添加被忽略的文件
-            git commit -m "Update FreeBSD dashboard binary" || true
-            git push origin main
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        if: env.TRIGGER_BUILD == 'true'
+        uses: softprops/action-gh-release@v1
         with:
-          name: dashboard-freebsd
-          path: dashboard.gz
+          tag_name: ${{ env.NEZHA_LATEST_TAG }}
+          name: "FreeBSD Dashboard ${{ env.NEZHA_LATEST_TAG }}"
+          files: |
+            dashboard.gz
+          body: |
+            FreeBSD dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  cleanup_runs:
+    name: Cleanup Old Workflow Runs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 5
+          keep_minimum_runs: 5        
 
 permissions:
   contents: write  # 添加写入权限 
