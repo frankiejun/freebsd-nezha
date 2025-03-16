@@ -1,27 +1,19 @@
 # FreeBSD-nezha
 
-This repository contains FreeBSD builds for the Nezha dashboard application.
+This repository automatically builds the FreeBSD version of the Nezha dashboard binary.
 
 ## Build Status
 
 ![Build FreeBSD Dashboard](https://github.com/frankiejun/freebsd-app/actions/workflows/build-freebsd.yml/badge.svg)
 
-## FreeBSD Dashboard Binary
+## Automated Build Process
 
-This repository automatically builds the FreeBSD version of the Nezha dashboard binary. The build process is triggered when:
+The build is triggered when:
+- Daily at 00:01 CST
+- A new version of Nezha is released
+- Manual trigger through GitHub Actions
+- Push or pull request to main branch
 
-1. A new version of Nezha is released
-2. Manual trigger through GitHub Actions
-3. Push to main branch
-4. Pull request to main branch
+## Download
 
-The FreeBSD binary can be found in the [Releases](../../releases) section, with the same version tag as the corresponding Nezha release.
-
-### Build Process
-- The build runs daily at 00:01 CST
-- Checks for new Nezha releases
-- If a new version is detected, builds the FreeBSD binary
-- Creates a new release with the binary attached
-
-### Download
-You can download the latest FreeBSD binary from the [Latest Release](../../releases/latest) page.
+The FreeBSD binary can be found in the [Releases](../../releases) section, with the same version tag as the corresponding Nezha release. You can download the latest version from the [Latest Release](../../releases/latest) page.
