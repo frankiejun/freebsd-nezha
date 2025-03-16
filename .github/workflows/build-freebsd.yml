@@ -18,18 +18,43 @@ jobs:
       
       - name: Get latest tags
         run: |
-          CURRENT_REPO_TAG=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r .tag_name)
-          NEZHA_LATEST_TAG=$(curl -sL "https://api.github.com/repos/naiba/nezha/releases/latest" | jq -r .tag_name)
+          # 尝试获取当前仓库的最新 release tag
+          CURRENT_REPO_TAG=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name // empty')
+          
+          # 获取 Nezha 最新 release tag (修改为正确的仓库路径)
+          NEZHA_LATEST_TAG=$(curl -sL "https://api.github.com/repos/naiba/nezha/releases/latest" | jq -r '.tag_name // empty')
+          
+          # 添加调试信息
+          echo "Debug: Checking release info..."
+          echo "Current repo API response:"
+          curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest"
+          echo -e "\nNezha repo API response:"
+          curl -sL "https://api.github.com/repos/naiba/nezha/releases/latest"
+          
+          if [ -z "$CURRENT_REPO_TAG" ]; then
+            echo "Warning: Could not get current repo tag"
+          fi
+          
+          if [ -z "$NEZHA_LATEST_TAG" ]; then
+            echo "Error: Could not get Nezha latest tag"
+            exit 1
+          fi
+          
           echo "CURRENT_REPO_TAG=${CURRENT_REPO_TAG}" >> $GITHUB_ENV
           echo "NEZHA_LATEST_TAG=${NEZHA_LATEST_TAG}" >> $GITHUB_ENV
+          
+          echo "Current repo tag: ${CURRENT_REPO_TAG}"
+          echo "Nezha latest tag: ${NEZHA_LATEST_TAG}"
 
       - name: Compare tags
         run: |
           if [ -z "${{ env.CURRENT_REPO_TAG }}" ] || [ "${{ env.CURRENT_REPO_TAG }}" != "${{ env.NEZHA_LATEST_TAG }}" ]; then
             echo "TRIGGER_BUILD=true" >> $GITHUB_ENV
+            echo "Building for new version ${NEZHA_LATEST_TAG}"
           else
             echo "TRIGGER_BUILD=false" >> $GITHUB_ENV
-          fi  
+            echo "Already up to date with version ${NEZHA_LATEST_TAG}"
+          fi
 
       - name: Setup and Build in FreeBSD VM
         if: env.TRIGGER_BUILD == 'true'
@@ -117,14 +142,16 @@ jobs:
             FreeBSD nezha-dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
           draft: false
           prerelease: false
+          generate_release_notes: true    # 自动生成发布说明
+          fail_on_unmatched_files: true   # 如果文件不存在则失败
+          token: ${{ secrets.GITHUB_TOKEN }}  # 明确指定 token
+          repository: ${{ github.repository }} # 明确指定仓库
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup_runs:
     name: Cleanup Old Workflow Runs
     runs-on: ubuntu-latest
-    permissions:
-      actions: write    # 添加 actions 写入权限
     steps:
       - name: Delete old workflow runs
         uses: Mattraks/delete-workflow-runs@v2
@@ -135,5 +162,14 @@ jobs:
           keep_minimum_runs: 5        
 
 permissions:
-  contents: write
-  actions: write      # 添加全局 actions 写入权限 
+  contents: write      # 用于创建 release
+  actions: write      # 用于管理工作流运行记录
+  checks: write       # 用于更新检查运行状态
+  deployments: write  # 用于部署
+  issues: write       # 用于管理 issues
+  packages: write     # 用于管理包
+  pull-requests: write # 用于管理 PR
+  repository-projects: write  # 用于管理项目
+  security-events: write     # 用于管理安全事件
+  statuses: write           # 用于更新状态
+  
