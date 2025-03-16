@@ -35,8 +35,8 @@ jobs:
             echo "now path is $(pwd)"
             
             # Initialize go module and get dependencies
-            go mod init github.com/nezhahq/nezha
-            go mod tidy
+            go mod init github.com/nezhahq/nezha >/dev/null
+            go mod tidy >/dev/null
             
             # Download and setup admin frontend first
             echo "Setting up admin frontend..."
@@ -77,7 +77,7 @@ jobs:
             # Build dashboard
             cd cmd/dashboard
             echo "Build now path is $(pwd)"
-            go mod tidy
+            go mod tidy >/dev/null
             go build
             
             # Compress dashboard binary and commit
@@ -89,6 +89,7 @@ jobs:
             cd ${GITHUB_WORKSPACE}
             
             # Git operations
+            git config --global --add safe.directory ${GITHUB_WORKSPACE}
             git config --global user.email "github-actions@github.com"
             git config --global user.name "GitHub Actions"
             git add dashboard.gz
