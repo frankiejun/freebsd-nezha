@@ -2,7 +2,7 @@ name: Build FreeBSD Dashboard
 
 on:
   schedule:
-    - cron: '1 0 * * *'
+    - cron: '1 16 * * *'    # UTC 16:01, 即北京时间 00:01
   workflow_dispatch:
   push:
     branches: [ main ]
@@ -68,9 +68,6 @@ jobs:
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             export PATH=./:$PATH:/root/go/bin
-            
-            # Create workspace directory
-            mkdir -p /workspace
             
             # Clone Nezha repository
             git clone https://github.com/nezhahq/nezha.git

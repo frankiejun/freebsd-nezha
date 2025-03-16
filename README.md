@@ -18,7 +18,7 @@ This repository automatically builds the FreeBSD version of the Nezha dashboard 
 The FreeBSD binary can be found in the [Releases](../../releases) section, with the same version tag as the corresponding Nezha release.
 
 ### Build Process
-- The build runs daily at 00:01 UTC
+- The build runs daily at 00:01 CST
 - Checks for new Nezha releases
 - If a new version is detected, builds the FreeBSD binary
 - Creates a new release with the binary attached
