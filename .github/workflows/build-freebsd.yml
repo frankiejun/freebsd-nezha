@@ -77,7 +77,6 @@ jobs:
             # Build dashboard
             cd cmd/dashboard
             echo "Build now path is $(pwd)"
-            go mod init dashboard
             go mod tidy
             go build
             
