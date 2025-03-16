@@ -26,9 +26,16 @@ jobs:
           run: |
             export PATH=$PATH:/root/go/bin
             
+            # Create workspace directory
+            mkdir -p /workspace
+            
             # Clone Nezha repository
             git clone https://github.com/nezhahq/nezha.git
             cd nezha
+            
+            # Initialize go module and get dependencies
+            go mod init github.com/nezhahq/nezha
+            go mod tidy
             
             # Generate API docs
             swag init --pd -d . -g ./cmd/dashboard/main.go -o ./cmd/dashboard/docs --parseGoList=false
@@ -51,9 +58,11 @@ jobs:
             
             # Build dashboard
             cd cmd/dashboard
+            go mod init dashboard
+            go mod tidy
             go build
             
-            # Compress dashboard binary and move to workspace root
+            # Compress dashboard binary
             gzip -c dashboard > /workspace/dashboard.gz
 
       - name: Upload artifact
