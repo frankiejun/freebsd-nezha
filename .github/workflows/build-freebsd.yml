@@ -1,0 +1,76 @@
+name: Build FreeBSD Dashboard
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup FreeBSD VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            pkg install -y go git wget unzip
+            go install github.com/swaggo/swag/cmd/swag@latest
+
+      - name: Build Dashboard
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          sync: rsync
+          copyback: true
+          run: |
+            export PATH=$PATH:/root/go/bin
+            
+            # Clone Nezha repository
+            git clone https://github.com/nezhahq/nezha.git
+            cd nezha
+            
+            # Generate API docs
+            swag init --pd -d . -g ./cmd/dashboard/main.go -o ./cmd/dashboard/docs --parseGoList=false
+            
+            # Download and setup admin frontend
+            ADMIN_RELEASE_URL=$(curl -s https://api.github.com/repos/nezhahq/admin-frontend/releases/latest | grep "browser_download_url.*dist.zip" | cut -d '"' -f 4)
+            wget -O admin-dist.zip "$ADMIN_RELEASE_URL"
+            mkdir -p ./cmd/dashboard/admin-dist
+            unzip admin-dist.zip -d temp
+            mv temp/dist/* ./cmd/dashboard/admin-dist/
+            rm -rf temp admin-dist.zip
+            
+            # Download and setup user frontend
+            USER_RELEASE_URL=$(curl -s https://api.github.com/repos/hamster1963/nezha-dash-v1/releases/latest | grep "browser_download_url.*dist.zip" | cut -d '"' -f 4)
+            wget -O user-dist.zip "$USER_RELEASE_URL"
+            mkdir -p ./cmd/dashboard/user-dist
+            unzip user-dist.zip -d temp
+            mv temp/dist/* ./cmd/dashboard/user-dist/
+            rm -rf temp user-dist.zip
+            
+            # Build dashboard
+            cd cmd/dashboard
+            go build
+            
+            # Compress dashboard binary and move to workspace root
+            gzip -c dashboard > /workspace/dashboard.gz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-freebsd
+          path: dashboard.gz
+          
+      - name: Commit and push if changed
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add dashboard.gz
+          git commit -m "Update FreeBSD dashboard binary" || exit 0
+          git push 
