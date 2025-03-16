@@ -40,17 +40,20 @@ jobs:
             
             # Generate API docs
             echo "Generating API docs..."
-            if ! swag init --pd -d . -g ./cmd/dashboard/main.go -o ./cmd/dashboard/docs --parseGoList=false; then
+            cd cmd/dashboard
+            echo "Generating docs from $(pwd)"
+            if ! swag init --pd -d . -g main.go -o docs --parseGoList=false; then
               echo "Failed to generate API docs"
               exit 1
             fi
             echo "API docs generated successfully"
             
             # Verify docs directory exists and contains files
-            if [[ ! -d "./cmd/dashboard/docs" || ! -e "./cmd/dashboard/docs/docs.go" ]; then
+            if [[ ! -d "./docs" || ! -e "./docs/docs.go" ]]; then
               echo "Docs directory was not created"
               exit 1
             fi
+            cd ../..  # 回到项目根目录
             
             # Download and setup admin frontend
             ADMIN_RELEASE_URL=$(curl -s https://api.github.com/repos/nezhahq/admin-frontend/releases/latest | grep "browser_download_url.*dist.zip" | cut -d '"' -f 4)
