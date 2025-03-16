@@ -68,7 +68,7 @@ jobs:
             echo "API docs generated successfully"
             
             # Verify docs directory exists and contains files
-            if [[ ! -d "./docs" || ! -e "./docs/docs.go" ]]; then
+            if [ ! -d "./docs" ] || [ ! -f "./docs/docs.go" ]; then
               echo "Docs directory was not created"
               exit 1
             fi
