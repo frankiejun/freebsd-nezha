@@ -19,8 +19,16 @@ jobs:
       - name: Get latest tags
         id: get_tags    # 添加 step id
         run: |
+          # 尝试获取当前仓库的最新 release tag
+          CURRENT_REPO_TAG=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name // empty')
+          
           # 获取 Nezha 最新 release tag
           NEZHA_LATEST_TAG=$(curl -sL "https://api.github.com/repos/naiba/nezha/releases/latest" | jq -r '.tag_name // empty')
+          
+          # 添加调试信息
+          echo "Debug: Checking release info..."
+          echo "Current repo tag: ${CURRENT_REPO_TAG}"
+          echo "Nezha latest tag: ${NEZHA_LATEST_TAG}"
           
           if [ -z "$NEZHA_LATEST_TAG" ]; then
             echo "Error: Could not get Nezha latest tag"
@@ -30,8 +38,7 @@ jobs:
           # 使用 GitHub Actions 的输出语法
           echo "nezha_tag=${NEZHA_LATEST_TAG}" >> $GITHUB_OUTPUT
           echo "NEZHA_LATEST_TAG=${NEZHA_LATEST_TAG}" >> $GITHUB_ENV
-          
-          echo "Nezha latest tag: ${NEZHA_LATEST_TAG}"
+          echo "CURRENT_REPO_TAG=${CURRENT_REPO_TAG}" >> $GITHUB_ENV
 
       - name: Compare tags
         run: |
@@ -46,8 +53,6 @@ jobs:
       - name: Setup and Build in FreeBSD VM
         if: env.TRIGGER_BUILD == 'true'
         uses: vmactions/freebsd-vm@v1
-        env:
-          LATEST_TAG: ${{ steps.get_tags.outputs.nezha_tag }}  # 使用 step 输出
         with:
           usesh: true
           sync: rsync
@@ -57,7 +62,6 @@ jobs:
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             # 在开始时输出版本号确认
-            echo "Building version: $LATEST_TAG"
             export PATH=./:$PATH:/root/go/bin
             
             # Clone Nezha repository
