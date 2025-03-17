@@ -40,9 +40,7 @@ jobs:
             exit 1
           fi
           
-          echo "CURRENT_REPO_TAG=${CURRENT_REPO_TAG}" >> $GITHUB_ENV
           echo "NEZHA_LATEST_TAG=${NEZHA_LATEST_TAG}" >> $GITHUB_ENV
-          
           echo "Current repo tag: ${CURRENT_REPO_TAG}"
           echo "Nezha latest tag: ${NEZHA_LATEST_TAG}"
 
@@ -59,6 +57,8 @@ jobs:
       - name: Setup and Build in FreeBSD VM
         if: env.TRIGGER_BUILD == 'true'
         uses: vmactions/freebsd-vm@v1
+        env:
+          NEZHA_LATEST_TAG: ${{ env.NEZHA_LATEST_TAG }}  # 显式传递环境变量到 VM
         with:
           usesh: true
           sync: rsync
@@ -67,6 +67,8 @@ jobs:
             pkg install -y go git wget unzip
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
+            # 在开始时输出版本号确认
+            echo "Building version: $NEZHA_LATEST_TAG"
             export PATH=./:$PATH:/root/go/bin
             
             # Clone Nezha repository
@@ -118,7 +120,7 @@ jobs:
             cd cmd/dashboard
             echo "Build now path is $(pwd)"
             go mod tidy >/dev/null
-            go build
+            go build -ldflags "-s -w -X github.com/nezhahq/nezha/service/singleton.Version=$NEZHA_LATEST_TAG" -trimpath -buildvcs=false
             
             # Compress dashboard binary and commit
             gzip -c dashboard > dashboard.gz
