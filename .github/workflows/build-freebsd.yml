@@ -65,7 +65,7 @@ jobs:
             export PATH=./:$PATH:/root/go/bin
             
             # Clone Nezha repository
-            git clone https://github.com/nezhahq/nezha.git
+            git clone -b ${{ env.NEZHA_LATEST_TAG }} https://github.com/nezhahq/nezha.git
             cd nezha
             echo "now path is $(pwd)"
             
@@ -150,8 +150,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          retain_days: 5
-          keep_minimum_runs: 5        
+          retain_days: 1
+          keep_minimum_runs: 3        
 
 permissions:
   contents: write      # 用于创建 release
