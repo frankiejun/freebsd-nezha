@@ -91,6 +91,10 @@ jobs:
             mv temp/dist/* ./cmd/dashboard/user-dist/
             rm -rf temp user-dist.zip
             
+            # Download GeoIP database
+            rm -rf ./pkg/geoip/geoip.db
+            wget -qO ./pkg/geoip/geoip.db https://ipinfo.io/data/free/country.mmdb?token=${{ secrets.IPINFO_TOKEN }}
+
             # Now generate API docs
             echo "Generating API docs..."
             cd cmd/dashboard
