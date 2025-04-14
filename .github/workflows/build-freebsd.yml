@@ -1,4 +1,4 @@
-name: Build FreeBSD Dashboard
+、name: Build FreeBSD Dashboard
 
 on:
   schedule:
@@ -57,13 +57,13 @@ jobs:
           usesh: true
           sync: rsync
           copyback: true
-          release: "13.2"    # 指定使用 FreeBSD 13.2
+          release: "14.2"    # 指定使用 FreeBSD 14.2
           prepare: |
             # 设置环境变量
             export IGNORE_OSVERSION=yes
             # 更新包管理器并安装基本工具
             pkg update -f
-            pkg install -y git wget unzip
+            pkg install -y git wget unzip rsync
             # 下载并安装 Go
             fetch https://go.dev/dl/go1.21.5.freebsd-amd64.tar.gz
             rm -rf /usr/local/go
@@ -135,9 +135,15 @@ jobs:
             # Compress dashboard binary and commit
             gzip -c dashboard > dashboard.gz
             
-            # Move the file to the workspace
+            # Move the file to the workspace and add debug info
             echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+            echo "Current directory: $(pwd)"
+            echo "Files in current directory:"
+            ls -la
+            echo "Copying dashboard.gz to workspace..."
             cp dashboard.gz ${GITHUB_WORKSPACE}/
+            echo "Verifying file was copied:"
+            ls -la ${GITHUB_WORKSPACE}/
 
       - name: Create Release
         if: env.TRIGGER_BUILD == 'true'
