@@ -58,15 +58,16 @@ jobs:
           sync: rsync
           copyback: true
           prepare: |
-            # 切换到 quarterly 仓库
+            # 切换到 latest 仓库
             mkdir -p /usr/local/etc/pkg/repos
-            echo 'FreeBSD: { url: "pkg+http://pkg.FreeBSD.org/${ABI}/quarterly" }' > /usr/local/etc/pkg/repos/FreeBSD.conf
+            echo 'FreeBSD: { url: "pkg+http://pkg.FreeBSD.org/${ABI}/latest" }' > /usr/local/etc/pkg/repos/FreeBSD.conf
             pkg update -f
-            # 安装所需软件包，指定具体的 go 版本
-            pkg install -y go121 git wget unzip
+            # 安装所需软件包，尝试其他 go 版本
+            pkg install -y go120 git wget unzip
             # 设置 go 环境
-            ln -s /usr/local/go121/bin/go /usr/local/bin/go
+            ln -s /usr/local/go120/bin/go /usr/local/bin/go
             # 安装 swag
+            export PATH=$PATH:/usr/local/go120/bin:/usr/local/bin
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             # 在开始时输出版本号确认
