@@ -1,4 +1,4 @@
-、name: Build FreeBSD Dashboard
+name: Build FreeBSD Dashboard
 
 on:
   schedule:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Get latest tags
-        id: get_tags    # 添加 step id
+        id: get_tags
         run: |
           # 尝试获取当前仓库的最新 release tag
           CURRENT_REPO_TAG=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name // empty')
@@ -157,10 +157,10 @@ jobs:
             FreeBSD nezha-dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
           draft: false
           prerelease: false
-          generate_release_notes: true    # 自动生成发布说明
-          fail_on_unmatched_files: true   # 如果文件不存在则失败
-          token: ${{ secrets.GITHUB_TOKEN }}  # 明确指定 token
-          repository: ${{ github.repository }} # 明确指定仓库
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -174,17 +174,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           retain_days: 1
-          keep_minimum_runs: 3        
+          keep_minimum_runs: 3
 
 permissions:
-  contents: write      # 用于创建 release
-  actions: write      # 用于管理工作流运行记录
-  checks: write       # 用于更新检查运行状态
-  deployments: write  # 用于部署
-  issues: write       # 用于管理 issues
-  packages: write     # 用于管理包
-  pull-requests: write # 用于管理 PR
-  repository-projects: write  # 用于管理项目
-  security-events: write     # 用于管理安全事件
-  statuses: write           # 用于更新状态
+  contents: write
+  actions: write
+  checks: write
+  deployments: write
+  issues: write
+  packages: write
+  pull-requests: write
+  repository-projects: write
+  security-events: write
+  statuses: write
   
