@@ -57,14 +57,10 @@ jobs:
           usesh: true
           sync: rsync
           copyback: true
+          release: "13.2"    # 指定使用 FreeBSD 13.2
           prepare: |
-            # 更新包数据库
             pkg update -f
-            # 安装所需软件包
-            pkg install -y lang/go git wget unzip
-            # 安装 swag
-            export PATH=$PATH:/usr/local/bin:/usr/local/go/bin
-            go version
+            pkg install -y go git wget unzip
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             # 在开始时输出版本号确认
