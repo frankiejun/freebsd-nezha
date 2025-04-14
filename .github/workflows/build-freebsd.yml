@@ -57,6 +57,7 @@ jobs:
           usesh: true
           sync: rsync
           copyback: true
+          version: '14.1'    # 指定使用 FreeBSD 14.1
           prepare: |
             pkg install -y go git wget unzip
             go install github.com/swaggo/swag/cmd/swag@latest
