@@ -59,8 +59,19 @@ jobs:
           copyback: true
           release: "13.2"    # 指定使用 FreeBSD 13.2
           prepare: |
+            # 设置环境变量
+            export IGNORE_OSVERSION=yes
+            # 更新包管理器并安装基本工具
             pkg update -f
-            pkg install -y go git wget unzip
+            pkg install -y git wget unzip
+            # 下载并安装 Go
+            fetch https://go.dev/dl/go1.21.5.freebsd-amd64.tar.gz
+            rm -rf /usr/local/go
+            tar -C /usr/local -xzf go1.21.5.freebsd-amd64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin:/root/go/bin
+            # 验证 Go 安装
+            go version
+            # 安装 swag
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             # 在开始时输出版本号确认
