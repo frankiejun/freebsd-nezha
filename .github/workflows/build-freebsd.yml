@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Get latest tags
-        id: get_tags
+        id: get_tags    # 添加 step id
         run: |
           # 尝试获取当前仓库的最新 release tag
           CURRENT_REPO_TAG=$(curl -sL "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.tag_name // empty')
@@ -56,22 +56,10 @@ jobs:
         with:
           usesh: true
           sync: rsync
+          release: 13.2
           copyback: true
-          release: "14.2"    # 指定使用 FreeBSD 14.2
           prepare: |
-            # 设置环境变量
-            export IGNORE_OSVERSION=yes
-            # 更新包管理器并安装基本工具
-            pkg update -f
-            pkg install -y git wget unzip rsync
-            # 下载并安装 Go
-            fetch https://go.dev/dl/go1.21.5.freebsd-amd64.tar.gz
-            rm -rf /usr/local/go
-            tar -C /usr/local -xzf go1.21.5.freebsd-amd64.tar.gz
-            export PATH=$PATH:/usr/local/go/bin:/root/go/bin
-            # 验证 Go 安装
-            go version
-            # 安装 swag
+            pkg install -y go git wget unzip
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
             # 在开始时输出版本号确认
@@ -135,15 +123,9 @@ jobs:
             # Compress dashboard binary and commit
             gzip -c dashboard > dashboard.gz
             
-            # Move the file to the workspace and add debug info
+            # Move the file to the workspace
             echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
-            echo "Current directory: $(pwd)"
-            echo "Files in current directory:"
-            ls -la
-            echo "Copying dashboard.gz to workspace..."
             cp dashboard.gz ${GITHUB_WORKSPACE}/
-            echo "Verifying file was copied:"
-            ls -la ${GITHUB_WORKSPACE}/
 
       - name: Create Release
         if: env.TRIGGER_BUILD == 'true'
@@ -157,10 +139,10 @@ jobs:
             FreeBSD nezha-dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
           draft: false
           prerelease: false
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+          generate_release_notes: true    # 自动生成发布说明
+          fail_on_unmatched_files: true   # 如果文件不存在则失败
+          token: ${{ secrets.GITHUB_TOKEN }}  # 明确指定 token
+          repository: ${{ github.repository }} # 明确指定仓库
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -174,17 +156,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           retain_days: 1
-          keep_minimum_runs: 3
+          keep_minimum_runs: 3        
 
 permissions:
-  contents: write
-  actions: write
-  checks: write
-  deployments: write
-  issues: write
-  packages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
+  contents: write      # 用于创建 release
+  actions: write      # 用于管理工作流运行记录
+  checks: write       # 用于更新检查运行状态
+  deployments: write  # 用于部署
+  issues: write       # 用于管理 issues
+  packages: write     # 用于管理包
+  pull-requests: write # 用于管理 PR
+  repository-projects: write  # 用于管理项目
+  security-events: write     # 用于管理安全事件
+  statuses: write           # 用于更新状态
   
