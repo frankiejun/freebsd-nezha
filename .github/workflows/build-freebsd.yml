@@ -121,12 +121,12 @@ jobs:
             # Debug: 确认文件存在
             ls -lh dashboard.gz
 
-            # 同时拷贝到 /github/workspace/ 和 ../../
-            mkdir -p /github/workspace/
-            cp dashboard.gz /github/workspace/
-            cp dashboard.gz ../../
-            ls -lh /github/workspace/dashboard.gz || true
-            ls -lh ../../dashboard.gz || true
+            # Move the file to the workspace
+            echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
+            cp dashboard.gz ${GITHUB_WORKSPACE}/
+
+      - name: List tags
+        run: git tag -l
 
       - name: Create Release
         if: env.TRIGGER_BUILD == 'true'
