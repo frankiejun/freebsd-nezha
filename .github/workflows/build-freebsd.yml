@@ -121,12 +121,9 @@ jobs:
             # Debug: 确认文件存在
             ls -lh dashboard.gz
 
-            # 确保 workspace 目录存在
-            mkdir -p /github/workspace/
-            ls -lh /github/workspace/
-
-            # Move the file to the workspace
-            cp dashboard.gz /github/workspace/
+            # 拷贝到仓库根目录，供主机同步
+            cp dashboard.gz ../../
+            ls -lh ../../dashboard.gz
 
       - name: Create Release
         if: env.TRIGGER_BUILD == 'true'
