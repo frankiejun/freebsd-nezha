@@ -121,9 +121,12 @@ jobs:
             # Debug: 确认文件存在
             ls -lh dashboard.gz
 
-            # 拷贝到仓库根目录，供主机同步
+            # 同时拷贝到 /github/workspace/ 和 ../../
+            mkdir -p /github/workspace/
+            cp dashboard.gz /github/workspace/
             cp dashboard.gz ../../
-            ls -lh ../../dashboard.gz
+            ls -lh /github/workspace/dashboard.gz || true
+            ls -lh ../../dashboard.gz || true
 
       - name: Create Release
         if: env.TRIGGER_BUILD == 'true'
@@ -132,7 +135,7 @@ jobs:
           tag_name: ${{ env.NEZHA_LATEST_TAG }}
           name: "FreeBSD nezha-Dashboard ${{ env.NEZHA_LATEST_TAG }}"
           files: |
-            dashboard.gz
+            **/dashboard.gz
           body: |
             FreeBSD nezha-dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
           draft: false
