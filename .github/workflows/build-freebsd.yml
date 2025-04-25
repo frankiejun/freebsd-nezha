@@ -69,9 +69,6 @@ jobs:
             cd nezha
             echo "now path is $(pwd)"
             
-            # 不需要 go mod init
-            go mod tidy >/dev/null
-            
             # Download and setup admin frontend first
             echo "Setting up admin frontend..."
             ADMIN_RELEASE_URL=$(curl -s https://api.github.com/repos/nezhahq/admin-frontend/releases/latest | grep "browser_download_url.*dist.zip" | cut -d '"' -f 4)
@@ -110,12 +107,12 @@ jobs:
               echo "Docs directory was not created"
               exit 1
             fi
-            cd ../..  # 回到项目根目录
-            
-            # Build dashboard
-            cd cmd/dashboard
-            echo "Build now path is $(pwd)"
+
+            # 只在这里执行 go mod tidy
             go mod tidy >/dev/null
+
+            # Build dashboard
+            echo "Build now path is $(pwd)"
             go build -ldflags "-s -w -X github.com/nezhahq/nezha/service/singleton.Version=${{ env.NEZHA_LATEST_TAG }}" -trimpath -buildvcs=false
             
             # Compress dashboard binary and commit
