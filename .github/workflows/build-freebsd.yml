@@ -143,7 +143,6 @@ jobs:
           generate_release_notes: true    # 自动生成发布说明
           fail_on_unmatched_files: true   # 如果文件不存在则失败
           token: ${{ secrets.GITHUB_TOKEN }}  # 明确指定 token
-          repository: ${{ github.repository }} # 明确指定仓库
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
