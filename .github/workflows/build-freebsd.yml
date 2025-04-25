@@ -120,6 +120,9 @@ jobs:
             
             # Debug: 确认文件存在
             ls -lh dashboard.gz
+
+            # 确保 workspace 目录存在
+            mkdir -p /github/workspace/
             ls -lh /github/workspace/
 
             # Move the file to the workspace
