@@ -62,7 +62,6 @@ jobs:
             pkg install -y go git wget unzip
             go install github.com/swaggo/swag/cmd/swag@latest
           run: |
-            # 在开始时输出版本号确认
             export PATH=./:$PATH:/root/go/bin
             
             # Clone Nezha repository
@@ -70,8 +69,7 @@ jobs:
             cd nezha
             echo "now path is $(pwd)"
             
-            # Initialize go module and get dependencies
-            go mod init github.com/nezhahq/nezha >/dev/null
+            # 不需要 go mod init
             go mod tidy >/dev/null
             
             # Download and setup admin frontend first
@@ -123,8 +121,11 @@ jobs:
             # Compress dashboard binary and commit
             gzip -c dashboard > dashboard.gz
             
+            # Debug: 确认文件存在
+            ls -lh dashboard.gz
+            ls -lh /github/workspace/
+
             # Move the file to the workspace
-            echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
             cp dashboard.gz /github/workspace/
 
       - name: Create Release
