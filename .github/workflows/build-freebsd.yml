@@ -135,7 +135,7 @@ jobs:
           tag_name: ${{ env.NEZHA_LATEST_TAG }}
           name: "FreeBSD nezha-Dashboard ${{ env.NEZHA_LATEST_TAG }}"
           files: |
-            **/dashboard.gz
+            dashboard.gz
           body: |
             FreeBSD nezha-dashboard binary for Nezha ${{ env.NEZHA_LATEST_TAG }}
           draft: false
